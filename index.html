@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="describption" content="Simulador de la biblioteca Paramo: prestamo y devolucion de libros usando clases, objetos e instancias en JavaScript">
+    <meta name="author" content="Juanita Callejas Castro">
+    <meta name="keywords" content="JavaScript, clases, objetos, POO, simulador, biblioteca">
+    <meta property="og:title" content="Biblioteca Paramo | Simulador con clases en Javascript">
+    <meta property="og:description" content="Pre-entrega 5: modelado de datos con la clase Libro, instancias con new y metodos de instancia. ">
+    <meta property="og:type" content="website">
+    <title>Biblioteca Paramo | Simulador con clases en JavaScript</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunce:opsz,wght@9..144,500;9..144,700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /*
+        Biblioteca Paramo - Estilos
+        Mobile-first. Paleta inspirada en lomos de libros y fichas de catalogo. */
+
+        :root {
+            --papel: #f2f5f1;
+            --papel-alterno: #e7eee9;
+            --blanco: #ffffff;
+            --tinta: #16262b;
+            --tinta-suave: #4a5d62;
+            --verde: #1f5d50;
+            --verde-oscuro: #164439;
+            --ambar: #b9822b;
+            --rojo-ficha: #c44536;
+            --linea: #cfd9d2;
+            --radio: 10px;
+            --fuente-titulo: "Fraunces", Georgia, "Times New Roman", serif;
+            --fuente-texto: "Work Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+            --fuente-codigo: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 5rem ;
+        }
+
+        body {
+            margin: 0;
+            background: var(--papel);
+            color: var(--tinta);
+            font-family: var(--fuente-texto);
+            font-size: 1rem;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: var(--fuente-titulo);
+            line-height: 1.2;
+            margin: 0 0 0.75rem;
+            color: var(--tinta);
+        }
+
+        h1 { font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 700;}
+        h2 {font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700;}
+        h3 { font-size: 1.2rem; font-weight: 500;}
+
+        p { margin: 0 0 1rem;}
+        a {color: var(--verde);}
+
+        code {
+            font-family: var(--fuente-codigo);
+            font-size: 0.9em;
+            background: var(--papel-alterno);
+            padding: 0.1em 0.4em;
+            border-radius: 4px;
+        }
+        :focus-visible {
+            outline: 3px solid var(--ambar);
+            outline-offset: 3px;
+        }
+
+        .contenedor {
+            width: min(1120px, 100% - 2rem);
+            margin-inline: auto;
+        }
+
+        .salto{
+            position: absolute;
+            left: -999px;
+            top: 0;
+            background: var(--tinta);
+            color: var(--blanco);
+            padding: 0.6rem 1rem;
+            z-index: 100;
+        }
+        .salto:focus { left:0; }
+
+        /* Cabecera */
+        .cabecera {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(242, 245, 241, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--linea);
+        }
+
+        .cabecera__interior {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem 1.5rem;
+            padding-block: 0.75rem;
+        }
+        .marca {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--tinta);
+            font-family: var(--fuente-titulo);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem 1.25rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .menu a {
+            color: var(--tinta-suave);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding-block: 0.25rem;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .menu a:hover {color: var(--verde); border-color: var(--verde); }
+
+        /* Hero */
+        .hero {
+            padding-block: 3rem 4rem;
+            border-bottom: 1px solid var(--linea);
+        }
+
+        .hero__interior {
+            display: grid;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .hero__lead {
+            font-size: 1.1rem;
+            color: var(--tinta-suave);
+            max-width: 55ch;
+        }
+        .hero__acciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Ficha de catalogo: el elemento memorable de la pagina */
+        .ficha {
+            background: var(--blanco);
+            border: 1px solid var(--linea);
+            border-top: 4px solid var(--rojo-ficha);
+            border-radius: 6px;
+            padding: 1.25rem 1.5rem 1rem;
+            box-shadow: 0 14px 30px -18px rgba(22, 38, 43, 0.35);
+            transform: rotate(-1.2deg);
+            max-width: 460px;
+            justify-self: center;
+            width: 100%;
+
+        }
+        .ficha__sello {
+            font-family: var(--fuente-codigo);
+            font-size: 0.85rem;
+            color: var(--rojo-ficha);
+        }
+
+        .ficha__cabecera {
+            border-bottom: 1px solid var(--linea);
+            padding-bottom: 0.6rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .ficha__datos { margin: 0; }
+
+        .ficha__datos div{
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--papel-alterno);
+        }
+
+        .ficha__datos dt{
+            font-family: var(--fuente-codigo);
+            font-size: 0.85rem;
+            color: var(--tinta-suave);
+        }
+
+        .ficha__datos dd { margin: 0; font-weight: 500; text-align: right; }
+
+        .ficha__pie {
+            margin: 0.9rem 0 0;
+            font-size: 0.85rem;
+            color: var(--tinta-suave);
+        }
+
+        /* Botones */
+
+        .boton {
+            display: inline-block;
+            font:inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            padding: 0.75rem 1.4rem;
+            border-radius: 999px;
+            border: 2px solid var(--verde);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.1s;
+        }
+
+        .boton:active { transform: translateY(1px);}
+
+        .boton--primario { background: var--verde; color: var(--blanco);}
+        .boton--primario:hover { background: var(--verde-oscuro); border-color: var(--verde-oscuro);}
+
+        .boton--secundario {background: transparent; color: var(--verde);}
+        .boton--secundario:hover { background: var(--verde); color: var(--blanco); }
+
+        /* Secciones */
+        .seccion { padding-block: 4rem;}
+        .seccion--alterna { background: var(--papel-alterno);}
+
+        .seccion-intro {
+            max-width: 68ch;
+            color: var(--tinta-suave);
+            margin-bottom: 2rem;
+        }
+
+        .rejilla { display: grid; gap: 1.5rem; }
+
+        .bloque { 
+            background: var(--blanco);
+            border: 1px solid var(--linea);
+            border-radius: var(--radio);
+            padding: 1.5rem;
+        }
+
+        .checklist {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .checklist li {
+            position: relative;
+            padding-left: 1.75rem;
+        }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--verde);
+            font-weight: 700;
+        }
+
+        /* Tablas */
+        .tabla-contenedor {
+            overflow-x: auto;
+            background: var(--blanco);
+            border: 1px solid var(--linea);
+            border-radius: var(--radio);
+        }
+
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.93rem;
+        }
+
+        .tabla caption {
+            text-align: left;
+            font-family: var(--fuente-titulo);
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 1rem 1rem 0.5rem;
+        }
+
+        .tabla th, 
+        .tabla td {
+            text-align: left;
+            padding: 0.7rem 1rem;
+            border-top: 1px solid var(--linea);
+            vertical-align: top;
+        }
+
+        .tabla thead th {
+            background: var(--papel);
+            font-weight: 600;
+            color: var(--tinta-suave);
+        }
+
+        .tabla tbody th { font-weight: 500;}
+
+        .tabla--catalogo { min-width: 560px;}
+
+        .estado {
+            display: inline-block;
+            padding: 0.15rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+
+        }
+        .estado--disponible { background: #d9ece5; color: var(--verde-oscuro);}
+        .estado--agotado    {background: #f6dcd8; color: #8c2b1f;}
+
+        /* Bloque de Codigo */
+
+          .codigo {
+            margin: 2rem 0 0;
+            background: var(--tinta);
+            color: #e6efe9;
+            border-radius: var(--radio);
+            overflow: hidden;
+          }
+
+          .codigo figcaption {
+            padding: 0.7rem 1.25rem;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: #b9c9c0;
+          }
+
+
+    .codigo pre {
+      margin: 0;
+      padding: 1.25rem;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+          .codigo code{ background: none; padding: 0; color: inherit; }
+
+          /* Simulador */
+          .panel-acciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .metricas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .metrica {
+            background: var(--blanco);
+            border: 1px solid var(--linea);
+            border-left: 4px solid var(--ambar);
+            border-radius: var(--radio);
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .metrica__valor {
+            font-family: var((--fuente-titulo));
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.1;
+          }
+
+          .metrica__etiqueta { color: var(--tinta-suave); font-size: 0.9rem; }
+
+          .bitacora-caja{
+            background: var(--blanco);
+            border: 1px solid var(--linea);
+            border-radius: var(--radio);
+            padding: 1.25rem;
+            max-height: 420px;
+            overflow-y: auto;
+          }
+
+          .bitacora {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+          }
+
+          .bitacora li {
+            padding: 0.5rem 0.75rem;
+            background: var(--papel);
+            border-radius: 6px;
+            border-left: 3px solid var(--verde);
+          }
+
+          .bitacora .bitacora__vacio {
+            border-left-color: var(--linea);
+            color: var(--tinta-suave);
+          }
+          .aviso {
+      background: #f6dcd8;
+      border-radius: var(--radio);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+ 
+
+          /* Pasos */
+          .pasos {
+            list-style: none;
+            counter-reset: paso;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 1.25rem;
+          }
+
+          .pasos li {
+            counter-increment: paso;
+            position: relative;
+            background: var(--blanco);
+            border: 1px solid var(--linea);
+            border-radius: var(--radio);
+            padding: 1.25rem 1.25rem 1.25rem 4rem;
+          }
+
+          .pasos li::before {
+            content: counter(paso);
+            position: absolute;
+            left: 1.25rem;
+            top: 1.15rem;
+            width: 2rem;
+            height: 2rem;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--verde);
+            color: var(--blanco);
+            font-weight: 600;
+          }
+
+          .pasos p { margin: 0; color: var(--tinta-suave); }
+
+          /* Pie */
+          .pie {
+            background: var(--tinta);
+            color: #c7d4cc;
+            padding-block: 2rem ;
+            font-size: 0.9rem;
+          }
+
+          .pie__interior p {margin: 0.2rem 0; }
+
+          /* Tablet y escritorio */
+          @media (min-width: 760px) {
+            .hero { padding-block: 5rem 6rem;}
+            .hero__interior { grid-template-columns: 1.15fr 0.85fr; }
+            .rejilla--dos { grid-template-columns: 1fr 1fr; align-items: start;}
+            .rejilla--simulador {grid-template-columns: 1.7fr 1fr; align-items: start; }
+            .pasos { grid-template-columns: repeat(3, 1fr);}
+
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            html  { scroll-behavior: auto; }
+            * {transition: none !important; }
+            .ficha {transform: none; }
+          }
+    </style>
+    <script src="./js/main.js" defer></script>
+
+</head>
+<body>
+
+    <a class="salto" href="#contenido">Saltar al contenido</a>
+
+    <header class="cabecera">
+        <div class="contenedor cabecera__interior">
+            <a class="marca" href="#inicio" aria-label="Biblioteca Paramo, ir al inicio">
+                <span class="marca__icono" aria-hidden="true">📚</span>
+                <span class="marca__texto">Biblioteca Paramo</span>
+            </a>
+            <nav aria-label="Navegacion principal">
+                <ul class="menu">
+                    <li><a href="#proyecto">Proyecto</a></li>
+                    <li><a href="#clase">La clase</a></li>
+                    <li><a href="#simulador">Simulador</a></li>
+                    <li><a href="#guia">Guia de uso</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="contenido">
+
+        <!--Hero-->
+        <section class="hero" id="inicio">
+            <div class="contenedor hero__interior">
+                <div class="hero__texto">
+                    <h1>Una biblioteca que presta libros con objetos de verdad</h1>
+                    <p class="hero__lead">
+                        Simulador de prestamos y devoluciones construido con la clase <code>Libro</code>
+                        cada libro es una instancia que conoce su propio estado y sabe prestarse, devolverse y calcular su multa.
+                    </p>
+                    <div class="hero__acciones">
+                        <a class="boton boton--primario" href="#simulador">Ir al simulador</a>
+                        <a class="boton boton--secundario" href="#clase">Ver como esta hecha la clase</a>
+                    </div>
+                </div>
+
+                <article class="ficha" aria-label="Ejemplo de un objeto Libro representado como ficha de catalogo">
+                    <header class="ficha__cabecera">
+                        <span class="ficha__sello">const libro3 = new Libro(...)</span>
+                    </header>
+                    <dl class="ficha__datos">
+                        <div><dt>id</dt><dd>3</dd></div>
+                        <div><dt>titulo</dt><dd>Rayuela</dd></div>
+                        <div><dt>autor</dt><dd>Julio Cortazar</dd></div>
+                        <div><dt>categoria</dt><dd>Novela</dd></div>
+                        <div><dt>copiasDisponibles</dt><dd>1</dd></div>
+                        <div><dt>vecesPrestado</dt><dd>0</dd></div>
+                    </dl>
+                    <p class="ficha__pie">libro3.prestar() deja <strong>copiasDisponibles</strong>en 0</p>
+                </article>
+            </div>
+        </section>
+
+        <!--Proyecto-->
+        <section class="seccion" id="proyecto" aria-labelledby="titulo-proyecto">
+            <div class="contenedor">
+                <h2 id="titulo-proyecto">Sobre el proyecto</h2>
+                <p class="seccion__intro">
+                    Esta es la preentrega del curso de coderhouse: Instanciando objetos.
+                    el objeto es consolidar el modelado de datos con clases, sin construir todavia una aplicacion visual completa.
+                    La pagina solo presenta el trabajo; la logica vive en <code>js/main.js</code> y se maneja la consola, <code>prompt</code> y <code>alert</code>.
+                </p>
+                <div class="rejilla rejilla--dos">
+                    <article class="bloque">
+                        <h3>Que se pidio y donde esta resuelto</h3>
+                        <ul class="checklist">
+                            <li><strong>Class:</strong> la clase <code>Libro</code> es la fabrica de objetos.</li>
+                            <li><strong>Al menos 4 propiedades:</strong> tiene seis (id, titulo, autor, categoria, copiasDisponibles, vecesPrestados). </li>
+                            <li><strong>Metodos de instancia:</strong> <code>prestar()</code>, <code>devolver()</code>, <code>calcularMulta()</code> e <code>informarEstado()</code>.</li>
+                            <li><strong>Uso de <code>this</code>:</strong> el constructor asigna acada propiedad con <code>this</code>.</li>
+                            <li><strong>Instanciacion con <code>new</code>:</strong>seis libros guardados en constantes.</li>
+                            <li><strong>Continuidad del simulador:</strong>ciclos, funciones, funcion flecha y arrays trabajan con los objetos.</li>
+                        </ul>
+                    </article>
+
+                    <article class="bloque">
+                        <h3>Convenciones y orden del repositorio</h3>
+                        <ul class="checklist">
+                            <li>PascalCase para la clase y camelCase para variables, funciones y metodos.</li>
+                            <li><code>index.html</code> en la raiz del repositorio.</li>
+                            <li>El JavaScript esta en la carpeta<code>js/</code> y se enlaza en el<code>&lt; head&gt;</code> con <code>defer</code>.</li>
+                            <li>Estilos incluidos en el propio <code>index.html</code>, sin archivos extra.</li>
+                            <li>Codigo comentado por secciones y sin errores de sintaxis.</li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!--Clase-->
+        <section class="seccion seccion--alterna" id="clase" aria-labelledby="titulo-clase">
+            <div class="contenedor">
+                <h2 id="titulo-clase">Anatomia de la clase Libro</h2>
+                <p class="seccion__intro">
+                    Cada instancia nace con sus propios datos y comparte los mismos metodos.
+                    Asi se organiza la informacion que maneja el simulador.
+                </p>
+
+                <div class="rejilla rejilla--dos">
+                    <div class="tabla-contenedor">
+                        <table class="tabla">
+                            <caption>Propiedades</caption>
+                            <thead>
+                                <tr><th scope="col">Propiedad</th><th scope="col">Tipo</th><th scope="col">Que guarda</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><th scope="row"><code>id</code></th><td>Number</td><td>Identificador unico del libro</td></tr>
+                                  <tr><th scope="row"><code>titulo</code></th><td>String</td><td>Nombre del libro</td></tr>
+                                  <tr><th scope="row"><code>autor</code></th><td>String</td><td>Persona que lo escribio</td></tr>
+                                  <tr><th scope="row"><code>categoria</code></th><td>String</td><td>Genero o tema del libro</td></tr>
+                                  <tr><th scope="row"><code>copiasTotales</code></th><td>Number</td><td>Copias que posee la biblioteca</td></tr>
+                                    <tr><th scope="row"><code>copiasDisponibles</code></th><td>Number</td><td>Copias que se pueden prestar ahora</td></tr>
+                                  <tr><th scope="row"><code>vecesPrestado</code></th><td>Number</td><td>Cuantas veces se ha prestado</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <div class="tabla-contenedor">
+                        <table class="tabla">
+                            <caption>Metodos de instancia</caption>
+
+                            <thead>
+                                <tr><th scope="col">Metodo</th><th scope="col">Que hace</th></tr>
+                            </thead>
+
+                            <tbody>
+                                 <tbody>
+                <tr><th scope="row"><code>prestar()</code></th><td>Resta una copia disponible, suma un préstamo y retorna <code>true</code> si fue posible.</td></tr>
+                <tr><th scope="row"><code>devolver()</code></th><td>Suma una copia disponible sin superar el total.</td></tr>
+                <tr><th scope="row"><code>calcularMulta(diasUsados)</code></th><td>Retorna el valor a pagar por los días que pasaron del límite.</td></tr>
+                <tr><th scope="row"><code>informarEstado()</code></th><td>Retorna un texto con los datos y la disponibilidad del libro.</td></tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <figure class="codigo">
+                    <figcaption>Constructor de la clase (fragmento)</figcaption>
+                    <pre><code>class Libro {
+                        constructor(id, titulo, autor, categoria, copiasTotales) {
+                            this.id =id;
+                            this.titulo = titulo;
+                            this.autor = autor;
+                            this.categoria = categoria;
+                            this.copiasTotales = copiasTotales;
+                            this.vecesPrestado = 0;
+                        }
+                    }
+                    </code></pre>
+                </figure>
+            </div>
+        </section>
+
+        <!-- Simulador -->
+         <section class="seccion" id="simulador" aria-labelledby="titulo-simulador">
+            <div class="contenedor">
+                <h2 id="titulo-simulador">Simulador de prestamos</h2>
+                <p class="seccion__intro">
+                        Inicia el Simulador para pedir libros prestados y devolverlos. El panel se actualiza con cada operacion y la consola del navegador guarda el detalle completo.
+                </p>
+
+                <div class="panel-acciones">
+                    <button class="boton boton--primario" type="button" id="btn-iniciar">Iniciar simulador</button>
+                    <button class="boton boton--secundario" type="button" id="btn-consola">Mostrar catalogo en consola</button>
+                </div>
+
+                <div class="metricas" role="group" aria-label="Resumen del simulador">
+                    <div class="metrica">
+                        <span class="metrica__valor" id="metrica-copias">0</span>
+                        <span class="metrica__etiqueta">Copias disponibles</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="metrica__valor" id="metrica-prestados">0</span>
+                        <span class="metrica__etiqueta">Libros en tu poder</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="metrica__valor" id="metrica-multas">$0</span>
+                        <span class="metrica__etiqueta">Multas Acumuladas</span>
+                    </div>
+                </div>
+
+                <div class="rejilla rejilla--simulador">
+                    <div class="tabla-contenedor">
+                        <table class="tabla tabla--catalogo">
+                            <caption> Catalogo actual</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Titulo</th>
+                                    <th scope="col">Autor</th>
+                                    <th scope="col">Categoria</th>
+                                    <th scope="col">Disponibles</th>
+                                    <th scope="col">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="catalogo-cuerpo">
+                                <tr><td colspan="6">Cargando catalogo</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <aside class="bitacora-caja" aria-labelledby="titulo-bitacora">
+                        <h3 id="titulo-bitacora">Bitacora de movimientos</h3>
+                        <ul class="bitacora" id="bitacora" aria-live="polite">
+                            <li class="bitacora__vacio">Aun no hay movimientos. Inicia el simulador para registrar el primero.</li>
+                        </ul>
+                    </aside>
+                </div>
+
+                <noscript>
+                    <p class="aviso">Este simulador necesita JavaScript activado para funcionar.</p>
+                </noscript>
+            </div>
+         </section>
+
+         <!--Guia-->
+         <section class="seccion seccion--alterna" id="guia" aria-labelledby="titulo-guia">
+            <div class="contenedor">
+                <h2 id="titulo-guia">Como usar el simulador</h2>
+                <ol class="pasos">
+                    <li>
+                        <h3>Abre la consola</h3>
+                        <p>Presiona F12 y entra en la pestana consola. Alli veras las pruebas de los metodos y cada movimiento.</p>
+                    </li>
+                    <li>
+                        <h3>Inicia el Simulador</h3>
+                        <p>Haz clic en el boton iniciar simulador. Se abrira un menu con ventanas emergentes para elegir la opcion.</p>
+                    </li>
+                    <li>
+                        <h3>Pide y devuelve libros</h3>
+                        <p>Puedes tener hasta 3 libros a la vez. Si devuelves pasados siete dias, se cobra una multa por cada dia de retraso.</p>
+                    </li>
+                </ol>
+            </div>
+         </section>
+    </main>
+
+      <footer class="pie">
+    <div class="contenedor pie__interior">
+      <p>Instanciando Objetos.</p>
+      <p>Desarrollado por Juanita Callejas Castro.</p>
+    </div>
+  </footer>
+    
+</body>
+</html>
